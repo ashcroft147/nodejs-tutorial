@@ -1,34 +1,19 @@
 /* 
- * node의 clustering 에 관한 예제이다.
+ * node의 pm2 활용을 토한 clustering
+ * pm2 실행 : pm2 start index.js -i 0 ( ※ logical cores on your computer)
  */
-const cluster = require('cluster');
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
 
+app.get('/', (req, res) => {     
+    crypto.pbkdf2('a', 'b', 100000, 512, 'sha512', () => {
+        res.send('Hi /');  
+    })  
+});
 
-if(cluster.isMaster) {
-    // Cause index.js to be executed *again* but in child mode
-    cluster.fork();
-    // cluster.fork();
-    // cluster.fork();
-    // cluster.fork();
-} else {
+app.get('/fast', (req, res) => {
+    res.send('Hi /fast');
+});
 
-    // Executed when child mode
-    const express = require('express');
-    const app = express();
-
-    function doWork(duration) {
-        const start = Date.now();
-        while (Date.now() - start < duration) {};
-    }
-
-    app.get('/', (req, res) => {
-        doWork(5000); // Event loop에서의 computational code는 event loop의 다른 작업을 blocking한다.
-        res.send('Hi /');
-    });
-
-    app.get('/fast', (req, res) => {
-        res.send('Hi /fast');
-    });
-
-    app.listen(3000);
-}
+app.listen(3000);
